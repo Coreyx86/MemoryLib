@@ -1,0 +1,4 @@
+c:\users\coreypc\documents\visual studio 2017\Projects\MemoryLib\MemoryLib\bin\Release\MemoryLib.dll
+c:\users\coreypc\documents\visual studio 2017\Projects\MemoryLib\MemoryLib\bin\Release\MemoryLib.pdb
+c:\users\coreypc\documents\visual studio 2017\Projects\MemoryLib\MemoryLib\obj\Release\MemoryLib.dll
+c:\users\coreypc\documents\visual studio 2017\Projects\MemoryLib\MemoryLib\obj\Release\MemoryLib.pdb
