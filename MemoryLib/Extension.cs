@@ -103,6 +103,11 @@ namespace MemoryLib
         {
             MemoryLib.ProcWriteMemory(MemoryLib.processName, address, write);
         }
+        public static void WriteByte(int address, byte write)
+        {
+            byte[] tmp = { write };
+            WriteBytes(address, tmp);
+        }
         public static void WriteUInt16(int address, UInt16 write)
         {
             MemoryLib.ProcWriteMemory(MemoryLib.processName, address, BitConverter.GetBytes(write));
