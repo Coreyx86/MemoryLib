@@ -3,61 +3,108 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace MemoryLib
 {
     public class Extension
     {
+        #region IMPORTS
+        const int PROCESS_VM_READ = 0x0010;
+        const int PROCESS_VM_WRITE = 0x0020;
+        const int PROCESS_VM_OPERATION = 0x0008;
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
+
+        [DllImport("kernel32.dll")]
+        static extern bool ReadProcessMemory(int hProcess, int lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesRead);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool WriteProcessMemory(int hProcess, int lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesWritten);
+        #endregion
+
+        private string processName;
+
+        public Extension(string _processName)
+        {
+            processName = _processName;
+        }
+
+        private byte[] ProcReadMemory(int address, int readLength)
+        {
+            Process process = Process.GetProcessesByName(processName)[0];
+            IntPtr processHandle = OpenProcess(PROCESS_VM_READ, false, process.Id);
+
+            int bytesRead = 0;
+            byte[] buffer = new byte[readLength];
+
+            ReadProcessMemory((int)processHandle, address, buffer, readLength, ref bytesRead);
+
+            return buffer;
+        }
+
+        private void ProcWriteMemory(int address, byte[] memory)
+        {
+            Process process = Process.GetProcessesByName(processName)[0];
+            IntPtr processHandle = OpenProcess(0x1F0FFF, false, process.Id);
+
+            int bytesWritten = 0;
+
+            WriteProcessMemory((int)processHandle, address, memory, memory.Length, ref bytesWritten);
+        }
+
         //Reading Functions
-        public static byte[] ReadBytes(int address, int readLen)
+        #region READING
+        public byte[] ReadBytes(int address, int readLen)
         {
-            return MemoryLib.ProcReadMemory(MemoryLib.processName, address, readLen);
+            return ProcReadMemory(address, readLen);
         }
-        public static UInt16 ReadUInt16(int address)
+        public UInt16 ReadUInt16(int address)
         {
-            return BitConverter.ToUInt16(MemoryLib.ProcReadMemory(MemoryLib.processName, address, 2), 0);
+            return BitConverter.ToUInt16(ProcReadMemory(address, 2), 0);
         }
-        public static UInt32 ReadUInt(int address)
+        public UInt32 ReadUInt(int address)
         {
-            return BitConverter.ToUInt32(MemoryLib.ProcReadMemory(MemoryLib.processName, address, 4), 0);
+            return BitConverter.ToUInt32(ProcReadMemory(address, 4), 0);
         }
-        public static UInt64 ReadUInt64(int address)
+        public UInt64 ReadUInt64(int address)
         {
-            return BitConverter.ToUInt64(MemoryLib.ProcReadMemory(MemoryLib.processName, address, 8), 0);
+            return BitConverter.ToUInt64(ProcReadMemory(address, 8), 0);
         }
-        public static Int16 ReadInt16(int address)
+        public Int16 ReadInt16(int address)
         {
-            return BitConverter.ToInt16(MemoryLib.ProcReadMemory(MemoryLib.processName, address, 2), 0);
+            return BitConverter.ToInt16(ProcReadMemory(address, 2), 0);
         }
-        public static Int32 ReadInt(int address)
+        public Int32 ReadInt(int address)
         {
-            return BitConverter.ToInt32(MemoryLib.ProcReadMemory(MemoryLib.processName, address, 4), 0);
+            return BitConverter.ToInt32(ProcReadMemory(address, 4), 0);
         }
-        public static Int64 ReadInt64(int address)
+        public Int64 ReadInt64(int address)
         {
-            return BitConverter.ToInt64(MemoryLib.ProcReadMemory(MemoryLib.processName, address, 8), 0);
+            return BitConverter.ToInt64(ProcReadMemory(address, 8), 0);
         }
-        public static float ReadFloat(int address)
+        public float ReadFloat(int address)
         {
-            return BitConverter.ToSingle(MemoryLib.ProcReadMemory(MemoryLib.processName, address, 4), 0);
+            return BitConverter.ToSingle(ProcReadMemory(address, 4), 0);
         }
-        public static double ReadDouble(int address)
+        public double ReadDouble(int address)
         {
-            return BitConverter.ToDouble(MemoryLib.ProcReadMemory(MemoryLib.processName, address, 8), 0);
+            return BitConverter.ToDouble(ProcReadMemory(address, 8), 0);
         }
-        public static byte ReadByte(int address)
+        public byte ReadByte(int address)
         {
-            return MemoryLib.ProcReadMemory(MemoryLib.processName, address, 1)[0];
+            return ProcReadMemory(address, 1)[0];
         }
-        public static SByte ReadSByte(int address)
+        public SByte ReadSByte(int address)
         {
-            return (SByte)MemoryLib.ProcReadMemory(MemoryLib.processName, address, 1)[0];
+            return (SByte)ProcReadMemory(address, 1)[0];
         }
-        public static bool ReadBool(int address)
+        public bool ReadBool(int address)
         {
-            return MemoryLib.ProcReadMemory(MemoryLib.processName, address, 1)[0] != 0;
+            return ProcReadMemory(address, 1)[0] != 0;
         }
-        public static string ReadString(int address)
+        public string ReadString(int address)
         {
             int blocksize = 40;
             int scalesize = 0;
@@ -65,7 +112,7 @@ namespace MemoryLib
 
             while (!str.Contains('\0'))
             {
-                byte[] buffer = MemoryLib.ProcReadMemory(MemoryLib.processName, address + scalesize, blocksize);
+                byte[] buffer = ProcReadMemory(address + scalesize, blocksize);
                 str += Encoding.UTF8.GetString(buffer);
                 scalesize += blocksize;
             }
@@ -73,14 +120,14 @@ namespace MemoryLib
             return str.Substring(0, str.IndexOf('\0'));
         }
 
-        public static float[] ReadVec2(int address)
+        public float[] ReadVec2(int address)
         {
             float[] buff = new float[2];
             buff[0] = ReadFloat(address);
             buff[1] = ReadFloat(address + 4);
             return buff;
         }
-        public static float[] ReadVec3(int address)
+        public float[] ReadVec3(int address)
         {
             float[] buff = new float[3];
             buff[0] = ReadFloat(address);
@@ -88,7 +135,7 @@ namespace MemoryLib
             buff[2] = ReadFloat(address + 8);
             return buff;
         }
-        public static float[] ReadVec4(int address)
+        public float[] ReadVec4(int address)
         {
             float[] buff = new float[4];
             buff[0] = ReadFloat(address);
@@ -97,73 +144,71 @@ namespace MemoryLib
             buff[3] = ReadFloat(address + 12);
             return buff;
         }
+        #endregion
 
         //Write
-        public static void WriteBytes(int address, byte[] write)
+        #region WRITING
+        public void WriteBytes(int address, byte[] write)
         {
-            MemoryLib.ProcWriteMemory(MemoryLib.processName, address, write);
+            ProcWriteMemory(address, write);
         }
-        public static void WriteByte(int address, byte write)
+        public void WriteUInt16(int address, UInt16 write)
         {
-            byte[] tmp = { write };
-            WriteBytes(address, tmp);
+            ProcWriteMemory(address, BitConverter.GetBytes(write));
         }
-        public static void WriteUInt16(int address, UInt16 write)
+        public void WriteUInt32(int address, uint write)
         {
-            MemoryLib.ProcWriteMemory(MemoryLib.processName, address, BitConverter.GetBytes(write));
+            ProcWriteMemory(address, BitConverter.GetBytes(write));
         }
-        public static void WriteUInt32(int address, uint write)
+        public void WriteUInt64(int address, UInt64 write)
         {
-            MemoryLib.ProcWriteMemory(MemoryLib.processName, address, BitConverter.GetBytes(write));
+            ProcWriteMemory(address, BitConverter.GetBytes(write));
         }
-        public static void WriteUInt64(int address, UInt64 write)
+        public void WriteInt16(int address, Int16 write)
         {
-            MemoryLib.ProcWriteMemory(MemoryLib.processName, address, BitConverter.GetBytes(write));
+            ProcWriteMemory(address, BitConverter.GetBytes(write));
         }
-        public static void WriteInt16(int address, Int16 write)
+        public void WriteInt32(int address, int write)
         {
-            MemoryLib.ProcWriteMemory(MemoryLib.processName, address, BitConverter.GetBytes(write));
+            ProcWriteMemory(address, BitConverter.GetBytes(write));
         }
-        public static void WriteInt32(int address, int write)
+        public void WriteInt64(int address, Int64 write)
         {
-            MemoryLib.ProcWriteMemory(MemoryLib.processName, address, BitConverter.GetBytes(write));
+            ProcWriteMemory(address, BitConverter.GetBytes(write));
         }
-        public static void WriteInt64(int address, Int64 write)
+        public void WriteFloat(int address, float write)
         {
-            MemoryLib.ProcWriteMemory(MemoryLib.processName, address, BitConverter.GetBytes(write));
+            ProcWriteMemory(address, BitConverter.GetBytes(write));
         }
-        public static void WriteFloat(int address, float write)
+        public void WriteDouble(int address, double write)
         {
-            MemoryLib.ProcWriteMemory(MemoryLib.processName, address, BitConverter.GetBytes(write));
+            ProcWriteMemory(address, BitConverter.GetBytes(write));
         }
-        public static void WriteDouble(int address, double write)
-        {
-            MemoryLib.ProcWriteMemory(MemoryLib.processName, address, BitConverter.GetBytes(write));
-        }
-        public static void WriteString(int address, string write)
+        public void WriteString(int address, string write)
         {
             string tmp = write + '\0';
             byte[] bWrite = System.Text.Encoding.ASCII.GetBytes(tmp);
-            MemoryLib.ProcWriteMemory(MemoryLib.processName, address, bWrite);
+            ProcWriteMemory(address, bWrite);
         }
 
-        public static void WriteVec2(int address, float[] write)
+        public void WriteVec2(int address, float[] write)
         {
             WriteFloat(address, write[0]);
             WriteFloat(address + 4, write[1]);
         }
-        public static void WriteVec3(int address, float[] write)
+        public void WriteVec3(int address, float[] write)
         {
             WriteFloat(address, write[0]);
             WriteFloat(address + 4, write[1]);
             WriteFloat(address + 8, write[2]);
         }
-        public static void WriteVec4(int address, float[] write)
+        public void WriteVec4(int address, float[] write)
         {
             WriteFloat(address, write[0]);
             WriteFloat(address + 4, write[1]);
             WriteFloat(address + 8, write[2]);
             WriteFloat(address + 12, write[3]);
         }
+        #endregion
     }
 }

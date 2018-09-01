@@ -13,21 +13,35 @@ namespace MemoryLib
 
         This library was made to simplify the use of Reading/Writing process memory in real time. 
      */
-    public static class MemoryLib
+     public class MemoryLib
     {
+        #region IMPORTS
         const int PROCESS_VM_READ = 0x0010;
         const int PROCESS_VM_WRITE = 0x0020;
         const int PROCESS_VM_OPERATION = 0x0008;
 
         [DllImport("kernel32.dll")]
-        public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
+        static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
 
         [DllImport("kernel32.dll")]
-        public static extern bool ReadProcessMemory(int hProcess, int lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesRead);
+        static extern bool ReadProcessMemory(int hProcess, int lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesRead);
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool WriteProcessMemory(int hProcess, int lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesWritten);
+        #endregion
 
-        public static byte[] ProcReadMemory(string processName, int address, int readLength)
+        private string processName;
+        public string ProcessName { get { return processName; } set { if (value != null || value != string.Empty) { processName = value; } } }
+
+        private Extension extension;
+        public Extension Extension { get { return extension; } }
+
+        public MemoryLib(string _processName)
+        {
+            processName = _processName;
+            extension = new Extension(_processName);
+        }
+
+        public byte[] ProcReadMemory(int address, int readLength)
         {
             Process process = Process.GetProcessesByName(processName)[0];
             IntPtr processHandle = OpenProcess(PROCESS_VM_READ, false, process.Id);
@@ -40,7 +54,7 @@ namespace MemoryLib
             return buffer;
         }
 
-        public static void ProcWriteMemory(string processName, int address, byte[] memory)
+        public void ProcWriteMemory(int address, byte[] memory)
         {
             Process process = Process.GetProcessesByName(processName)[0];
             IntPtr processHandle = OpenProcess(0x1F0FFF, false, process.Id);
@@ -49,15 +63,5 @@ namespace MemoryLib
 
             WriteProcessMemory((int)processHandle, address, memory, memory.Length, ref bytesWritten);
         }
-
-        public static string processName;
-
-        static MemoryLib()
-        {
-
-        }
-
-
-
     }
 }
