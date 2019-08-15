@@ -31,7 +31,7 @@ namespace MemoryLib
             processName = _processName;
         }
 
-        private byte[] ProcReadMemory(int address, int readLength)
+        public byte[] ProcReadMemory(int address, int readLength)
         {
             Process process = Process.GetProcessesByName(processName)[0];
             IntPtr processHandle = OpenProcess(PROCESS_VM_READ, false, process.Id);
@@ -44,7 +44,7 @@ namespace MemoryLib
             return buffer;
         }
 
-        private void ProcWriteMemory(int address, byte[] memory)
+        public void ProcWriteMemory(int address, byte[] memory)
         {
             Process process = Process.GetProcessesByName(processName)[0];
             IntPtr processHandle = OpenProcess(0x1F0FFF, false, process.Id);

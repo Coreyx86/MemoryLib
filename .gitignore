@@ -1,0 +1,7 @@
+
+*.cache
+*.lock
+*.ide-wal
+*.ide-shm
+*.ide
+.vs/MemoryLib/v16/.suo
