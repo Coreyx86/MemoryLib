@@ -13,16 +13,27 @@ namespace MemoryLib
 
         This library was made to simplify the use of Reading/Writing process memory in real time. 
      */
-     public class MemoryLib
+     public class Memory
     {
 
-        private string processName;
-        public string ProcessName { get { return processName; } set { if (value != null || value != string.Empty) { processName = value; } } }
 
         private Extension extension;
         public Extension Extension { get { return extension; } }
 
-        public MemoryLib(string _processName)
+        private string processName = string.Empty;
+        public string ProcessName
+        {
+            get
+            {
+                return processName;
+            }
+            set
+            {
+                processName = value;
+            }
+        }
+
+        public Memory(string _processName)
         {
             processName = _processName;
             extension = new Extension(_processName);

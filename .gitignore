@@ -5,3 +5,8 @@
 *.ide-shm
 *.ide
 .vs/MemoryLib/v16/.suo
+*.pdb
+*.dll
+*.txt
+*.pdb
+*.dll
