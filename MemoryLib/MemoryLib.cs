@@ -30,6 +30,11 @@ namespace MemoryLib
             set
             {
                 processName = value;
+
+                if(extension != null)
+                {
+                    extension.ProcessName = value;
+                }
             }
         }
 
