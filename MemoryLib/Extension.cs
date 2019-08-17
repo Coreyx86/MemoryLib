@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace MemoryLib
 {
@@ -24,7 +25,16 @@ namespace MemoryLib
         static extern bool WriteProcessMemory(int hProcess, int lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesWritten);
         #endregion
 
-        private string processName;
+        private string processName = string.Empty;
+
+        public string ProcessName
+        {
+            get { return processName; }
+            set
+            {
+                processName = value;
+            }
+        }
 
         public Extension(string _processName)
         {
@@ -120,28 +130,29 @@ namespace MemoryLib
             return str.Substring(0, str.IndexOf('\0'));
         }
 
-        public float[] ReadVec2(int address)
+        public Vector2 ReadVec2(int address)
         {
-            float[] buff = new float[2];
-            buff[0] = ReadFloat(address);
-            buff[1] = ReadFloat(address + 4);
+            Vector2 buff = new Vector2();
+            buff.X = ReadFloat(address);
+            buff.Y = ReadFloat(address + 4);
             return buff;
         }
-        public float[] ReadVec3(int address)
+
+        public Vector3 ReadVec3(int address)
         {
-            float[] buff = new float[3];
-            buff[0] = ReadFloat(address);
-            buff[1] = ReadFloat(address + 4);
-            buff[2] = ReadFloat(address + 8);
+            Vector3 buff = new Vector3();
+            buff.X = ReadFloat(address);
+            buff.Y = ReadFloat(address + 4);
+            buff.Z = ReadFloat(address + 8);
             return buff;
         }
-        public float[] ReadVec4(int address)
+        public Vector4 ReadVec4(int address)
         {
-            float[] buff = new float[4];
-            buff[0] = ReadFloat(address);
-            buff[1] = ReadFloat(address + 4);
-            buff[2] = ReadFloat(address + 8);
-            buff[3] = ReadFloat(address + 12);
+            Vector4 buff = new Vector4();
+            buff.W = ReadFloat(address);
+            buff.X = ReadFloat(address + 4);
+            buff.Y = ReadFloat(address + 8);
+            buff.Z = ReadFloat(address + 12);
             return buff;
         }
         #endregion
@@ -191,23 +202,24 @@ namespace MemoryLib
             ProcWriteMemory(address, bWrite);
         }
 
-        public void WriteVec2(int address, float[] write)
+        public void WriteVec2(int address, Vector2 write)
         {
-            WriteFloat(address, write[0]);
-            WriteFloat(address + 4, write[1]);
+            WriteFloat(address, write.X);
+            WriteFloat(address + 4, write.Y);
         }
-        public void WriteVec3(int address, float[] write)
+
+        public void WriteVec3(int address, Vector3 write)
         {
-            WriteFloat(address, write[0]);
-            WriteFloat(address + 4, write[1]);
-            WriteFloat(address + 8, write[2]);
+            WriteFloat(address, write.X);
+            WriteFloat(address + 4, write.Y);
+            WriteFloat(address + 8, write.Z);
         }
-        public void WriteVec4(int address, float[] write)
+        public void WriteVec4(int address, Vector4 write)
         {
-            WriteFloat(address, write[0]);
-            WriteFloat(address + 4, write[1]);
-            WriteFloat(address + 8, write[2]);
-            WriteFloat(address + 12, write[3]);
+            WriteFloat(address, write.W);
+            WriteFloat(address + 4, write.X);
+            WriteFloat(address + 8, write.Y);
+            WriteFloat(address + 12, write.Z);
         }
         #endregion
     }
