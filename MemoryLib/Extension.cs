@@ -159,6 +159,11 @@ namespace MemoryLib
 
         //Write
         #region WRITING
+
+        public void WriteBool(int address, bool write)
+        {
+            ProcWriteMemory(address, BitConverter.GetBytes(write));
+        }
         public void WriteBytes(int address, byte[] write)
         {
             ProcWriteMemory(address, write);
